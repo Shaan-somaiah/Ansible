@@ -1,0 +1,9 @@
+---
+- name: Setup Arch 
+  hosts: arch-host
+  roles:
+#    - { role: network_setup, become: true }
+    - { role: grub_setup, become: true }
+#    - { role: install_packages, become: true }
+#    - { role: copy_config_files }
+#    - { role: post_install_setup , become: true }
