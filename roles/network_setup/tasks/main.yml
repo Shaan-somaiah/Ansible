@@ -86,12 +86,11 @@
       state: directory
       recurse: yes
       mode: '0700'
-    when: not network_setup_done.stat.exists 
-  
-  - name: Place marker file if all above succeeds    
+    when: not network_setup_done.stat.exists
+
+  - name: Place marker file if all above succeeds
     ansible.builtin.file:
       path: /var/log/ansibleMarkers/NetworkSetup.success
       state: touch
       mode: '0600'
     when: not network_setup_done.stat.exists 
-
