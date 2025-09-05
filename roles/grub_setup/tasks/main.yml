@@ -1,0 +1,28 @@
+## By default arch installer places grub and its config in /efi which is a seperate partiton on the disk
+## This is not ideal if you want to include grub and its config in btrfs snapshots as /efi needs to be formatted in FAT32
+## Below play checks if grub is installed within /efi as if yes , removes it and installs in under /boot which is formatted in BTRFS
+---
+- name: Check if /efi/grub exsist
+  ansible.builtin.stat:
+    path: /efi/grub
+  register: efi_grub_stat
+
+- name: Remove exsisting grub config if above exsists 
+  file:
+    path: /efi/grub
+    state: absent
+  when: efi_grub_stat.stat.exists 
+
+- name: Install grub under /boot
+  ansible.builtin.shell: |
+    grub-install --target=x86_64-efi --efi-directory=/efi --boot-directory=/boot --bootloader-id=arch
+  args: 
+    executable: /bin/bash
+  when: efi_grub_stat.stat.exists
+
+- name: Regenerate grub-config
+  ansible.builtin.shell: |
+    grub-mkconfig -o /boot/grub/grub.cfg
+  args: 
+    executable: /bin/bash
+  when: efi_grub_stat.stat.exists
