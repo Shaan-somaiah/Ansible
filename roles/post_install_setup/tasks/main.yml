@@ -1,0 +1,64 @@
+## Play to handle post package install setup
+---
+- name: Update font cache
+  ansible.builtin.shell: |
+    fc-cache
+  args:
+    executable: /bin/bash
+
+- name: Add user to required groups
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    groups: libvirt, kvm
+    append: true
+
+- name: Setup firewall default outgoing rule
+  community.general.ufw:
+    state: enabled
+    direction: outgoing
+    policy: allow
+
+- name: Setup firewall default incoming rule
+  community.general.ufw:
+    state: enabled
+    direction: incoming
+    policy: allow
+
+- name: Gen colours from pywal
+  ansible.builtin.shell: |
+    wal -i /home/{{ ansible_user }}/.config/background  &&  pywalfox install
+  args:
+    executable: /bin/bash
+  ignore_errors: true  
+
+- name: Setup snapper for BTRFS snapshots
+  ansible.builtin.shell: |
+    snapper -c root create-config /
+    snapper -c home create-config /home
+    snapper -c root set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
+    snapper -c home set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
+    snapper -c root set-config TIMELINE_CREATE=no
+    snapper -c home set-config TIMELINE_CREATE=no
+  args: 
+    executable: /bin/bash
+  ignore_errors: true
+
+- name: Copy mkinitcpo file with btrfs-overlayfs added to hooks required to automatically take pre and post snapshots
+  ansible.builtin.copy:
+    src: mkinitcpio.conf
+    dest: "/etc/"
+    owner: root
+    group: root
+    mode: preserve
+  register: copy_result
+
+- name: Regerate initcpio if copy was done
+  ansible.builtin.shell: |
+    mkinitcpio -P
+  when: copy_result.changed
+
+- name: Start grub-btrfs service
+  ansible.builtin.service:
+    name: "grub-btrfsd"
+    state: started
+    enabled: true
