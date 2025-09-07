@@ -86,19 +86,19 @@
   ignore_errors: true
   when: yay_installed.rc != 0
 
-- name: Upgrade yay packages
+- name: Upgrade and install yay packages
   ansible.builtin.shell: |
-    yay -Syu --no-confirm
+    yay -Syu wlogout hyprpolkitagent btrfs-assistant python-pywalfox --noconfirm
   changed_when: false
   become_user: "{{ ansible_user }}"
   ignore_errors: true
   
-- name: Install yay packages
-  ansible.builtin.shell: |
-    yay -S "{{ item }} --no-confirm"
-  loop: "{{ my_aur_packages }}"
-  become_user: "{{ ansible_user }}"
-  ignore_errors: true
+#- name: Install yay packages
+#  ansible.builtin.shell: |
+#    yay -S {{ item }} --noconfirm
+#  loop: "{{ my_aur_packages }}"
+#  become_user: "{{ ansible_user }}"
+#  ignore_errors: true
 
 - name: Enabled installed services
   ansible.builtin.service:
