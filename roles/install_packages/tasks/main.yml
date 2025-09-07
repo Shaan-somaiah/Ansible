@@ -109,3 +109,4 @@
     - libvirtd
     - cronie
     - ufw
+    - docker
