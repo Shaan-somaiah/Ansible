@@ -9,7 +9,7 @@
 - name: Add user to required groups
   ansible.builtin.user:
     name: "{{ ansible_user }}"
-    groups: libvirt, kvm
+    groups: libvirt, kvm , docker
     append: true
 
 - name: Setup firewall default outgoing rule
