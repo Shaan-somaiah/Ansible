@@ -1,6 +1,6 @@
 ---
-- name: Setup Arch 
-  hosts: arch-host
+- name: Setup Arch
+  hosts: arch-main
   roles:
     - { role: network_setup, become: true }
     - { role: grub_setup, become: true }

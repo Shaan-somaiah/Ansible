@@ -1,31 +1,30 @@
 #!/bin/bash
 
-# Check if a username is provided
 if [ -z "$1" ]; then
   echo "Usage: $0 <username>"
   exit 1
 fi
 
-# The username to be added to sudoers
 USER=$1
 
-# Check if the user exists
 if ! id "$USER" &>/dev/null; then
   echo "User '$USER' does not exist."
   exit 1
 fi
 
-# Backup the sudoers file before making any changes
-cp /etc/sudoers /etc/sudoers.bak
+# Create a sudoers file in /etc/sudoers.d/
+SUDOERS_FILE="/etc/sudoers.d/$USER"
+echo "$USER ALL=(ALL) NOPASSWD: ALL" > "$SUDOERS_FILE"
 
-# Add the user to sudoers without password
-echo "$USER ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+# Set correct permissions
+chmod 440 "$SUDOERS_FILE"
 
-# Check if the operation was successful
-if [ $? -eq 0 ]; then
-  echo "User '$USER' has been added to sudoers with no password prompt."
+# Validate syntax
+if visudo -cf "$SUDOERS_FILE"; then
+  echo "User '$USER' has been added to sudoers.d with NOPASSWD."
 else
-  echo "An error occurred while modifying sudoers."
+  echo "Syntax error in sudoers file. Removing it."
+  rm -f "$SUDOERS_FILE"
   exit 1
 fi
 
