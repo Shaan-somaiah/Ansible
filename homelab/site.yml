@@ -1,0 +1,13 @@
+#---
+#- name: Base OS setup
+#  hosts: all
+#  become: true
+#  roles:
+#    - role: os_setup
+
+#- name: Networking devices setup
+#  hosts: networking_dev
+#  gather_facts: false
+#  roles:
+#    - role: network_setup
+
