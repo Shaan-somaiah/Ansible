@@ -1,5 +1,5 @@
 ---
-- name: Setup Arch
+- name: setup arch-main
   hosts: arch-main
   roles:
     - { role: network_setup, become: true }
