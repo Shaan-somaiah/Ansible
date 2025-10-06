@@ -1,0 +1,5 @@
+---
+- name: setup dns servers
+  hosts: dns
+  roles:
+    - { role: dns_setup, become: true }

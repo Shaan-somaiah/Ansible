@@ -1,0 +1,17 @@
+## Play to copy dotfiles
+---
+- name: Copy configuration files to {{ ansible_user }} home directory
+  ansible.builtin.copy:
+    src: home_dir/
+    dest: "/home/{{ ansible_user }}/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: preserve 
+
+- name: Copy configuration files to {{ansible_user}}/home .config directory
+  ansible.builtin.copy:
+    src: config/
+    dest: "/home/{{ ansible_user }}/.config/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: preserve
