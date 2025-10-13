@@ -1,0 +1,42 @@
+---
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:2025.08.0
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    environment:
+      TZ: 'Asia/Calcutta'
+      FTLCONF_dns_listeningMode: 'all'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+    cap_add:
+      - NET_ADMIN
+      - SYS_TIME
+      - SYS_NICE
+    restart: unless-stopped
+    networks:
+      - dns_net
+
+  bind:
+    container_name: bind9
+    image: internetsystemsconsortium/bind9:9.20
+    ports:
+      - "5353:53/udp"
+      - "5353:53/tcp"
+    volumes:
+      - ./bind:/etc/bind
+    restart: unless-stopped
+    networks:
+      - dns_net
+
+networks:
+  dns_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.100.0/24
