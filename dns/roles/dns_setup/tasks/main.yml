@@ -1,1 +1,128 @@
-placeholder
+## Play to setup dns server on ubuntu server
+## Uses pihole + bind9 within docker containers
+---
+- name: Update apt package repository
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: yes
+
+- name: Check to see if docker is installed
+  stat:
+    path: /usr/bin/docker
+  register: docker_installed
+
+- name: Install dependencies
+  apt:
+    name:
+      - curl
+      - ca-certificates
+      - dnsutils
+      - iputils-ping
+    state: present
+    update_cache: yes
+  
+- name: Download official docker install script
+  get_url:
+    url: https://get.docker.com
+    dest: /tmp/get-docker.sh
+    mode: '0755'
+  register: docker_script_downloaded
+  when: not docker_installed.stat.exists
+    
+- name: Run docker install script
+  command: |
+    bash /tmp/get-docker.sh
+  args:
+    creates: /usr/bin/docker
+  when: not docker_installed.stat.exists
+
+- name: Cleanup docker install script if docker installed successfully
+  file:
+    path: /tmp/get-docker.sh
+    state: absent
+
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+    
+- name: Stop and disable systemd-resolvd to free up port 53
+  systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: no
+
+- name: Modify /etc/resolv.conf with fallback and localdns
+  copy:
+    dest: /etc/resolv.conf
+    content: |
+      search {{ SEARCH_DOMAIN }}
+      nameserver {{ DNS_1 }}
+      nameserver {{ DNS_2 }}
+
+
+- name: Copy docker compose and config files to /home/{{ ansible_user }}
+  copy:
+    src: dns/
+    dest: /home/{{ ansible_user }}/dns/
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Set permission recursive for files
+  file:
+    path: /home/{{ ansible_user }}/dns
+    recurse: yes
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Set permission recursive for directories
+  file:
+    path: /home/{{ ansible_user }}/dns
+    recurse: yes
+    state: directory
+    mode: '0755'
+
+
+- name: Ensure all changes are flushed to disk
+  shell: sync
+
+- name: Reboot to apply group and path changes
+  reboot:
+    reboot_timeout: 300
+  when: docker_script_downloaded is defined and docker_script_downloaded.changed
+
+  
+- name: Wait for system to come back online
+  wait_for_connection:
+    timeout: 300
+
+- name: Start containers using docker compose
+  command: |
+    docker compose up -d
+  args:
+    chdir: /home/{{ ansible_user }}/dns
+
+- name: Test if dns is working as expected
+  command: |
+    nslookup google.com 127.0.0.1
+  register: dns_working
+  ignore_errors: true
+
+- name: Modify /etc/resolv.conf to remove fallbackdns
+  copy:
+    dest: /etc/resolv.conf
+    content: |
+      search {{ SEARCH_DOMAIN }}
+      nameserver {{ DNS_1 }}
+  when: dns_working is defined and dns_working.rc == 0    
