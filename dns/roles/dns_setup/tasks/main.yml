@@ -113,6 +113,10 @@
   args:
     chdir: /home/{{ ansible_user }}/dns
 
+- name: Wait for 20s for container to come up
+  wait_for:
+    timeout: 20
+
 - name: Test if dns is working as expected
   command: |
     nslookup google.com 127.0.0.1
