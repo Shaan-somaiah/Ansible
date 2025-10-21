@@ -23,7 +23,7 @@ services:
 
   bind:
     container_name: bind9
-    image: internetsystemsconsortium/bind9:9.20
+    image: ubuntu/bind9:9.16-20.04_beta
     ports:
       - "5353:53/udp"
       - "5353:53/tcp"
