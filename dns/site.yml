@@ -1,5 +1,10 @@
 ---
-- name: setup dns servers
+- name: Setup dns servers
   hosts: dns
   roles:
     - { role: dns_setup, become: true }
+
+- name: Setup qnetd voter
+  hosts: dns-node1
+  roles:
+    - { role: setup_qnetd, become: true }
