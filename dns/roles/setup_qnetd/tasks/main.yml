@@ -1,0 +1,40 @@
+## Play to setup qnetd for tiebreaker in proxmox cluster
+---
+- name: Update apt package repository
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: yes
+
+- name: Install required packages
+  apt:
+    name:
+      - corosync
+      - corosync-qnetd
+      - dnsutils
+      - ufw
+    state: present
+
+
+- name: Allow port 5403 in ufw for qnetd
+  ufw: 
+    rule: allow
+    port: 5403
+    proto: tcp
+
+- name: Enable ufw
+  ufw:
+    state: enabled
+
+- name: Enable corosync-qnetd
+  systemd:
+    name: corosync-qnetd
+    enabled: true
+
+- name: Start corosync-qnetd
+  systemd:
+    name: corosync-qnetd
+    state: started
+
