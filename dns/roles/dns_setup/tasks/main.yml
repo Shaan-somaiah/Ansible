@@ -21,9 +21,34 @@
       - ca-certificates
       - dnsutils
       - iputils-ping
+      - ufw
+      - lsof
     state: present
     update_cache: yes
-  
+
+
+- name: Allow tcp port 53 in ufw for dns
+  ufw:
+    rule: allow
+    port: 53
+    proto: tcp
+
+- name: Allow udp port 53 in ufw dor dns
+  ufw:
+    rule: allow
+    port: 53
+    proto: udp
+
+- name: Allow ssh port in ufw
+  ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+- name: Enable ufw
+  ufw:
+    state: enabled
+
 - name: Download official docker install script
   get_url:
     url: https://get.docker.com
@@ -31,7 +56,7 @@
     mode: '0755'
   register: docker_script_downloaded
   when: not docker_installed.stat.exists
-    
+
 - name: Run docker install script
   command: |
     bash /tmp/get-docker.sh
@@ -54,7 +79,7 @@
     name: "{{ ansible_user }}"
     groups: docker
     append: yes
-    
+
 - name: Stop and disable systemd-resolvd to free up port 53
   systemd:
     name: systemd-resolved
@@ -102,7 +127,7 @@
     reboot_timeout: 300
   when: docker_script_downloaded is defined and docker_script_downloaded.changed
 
-  
+
 - name: Wait for system to come back online
   wait_for_connection:
     timeout: 300
