@@ -1,5 +1,0 @@
----
-- name: setup ubuntu-template
-  hosts: ubuntu-template
-  roles:
-    - { role: ubuntu_template_setup, become: true }

@@ -7,3 +7,13 @@
     - { role: install_packages, become: true }
     - { role: copy_config_files }
     - { role: post_install_setup , become: true }
+
+- name: Setup dns servers
+  hosts: dns-servers
+  roles:
+    - { role: dns_setup, become: true }
+
+- name: Setup qnetd voter
+  hosts: dns-node1
+  roles:
+    - { role: setup_qnetd, become: true }   
