@@ -37,7 +37,7 @@
 ##    find /sys/class/net -type l -printf '%f\n' | grep -v wl
   - name: Get target interface
     ansible.builtin.shell: |
-      find /sys/class/net -type l -not -lname '*virt*' -printf '%f\n' | grep -v wl     
+      find /sys/class/net -type l -printf '%f\n' | grep -v wl | grep en
     register: physical_nic
     changed_when: false
 

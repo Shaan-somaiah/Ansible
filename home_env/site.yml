@@ -9,7 +9,7 @@
     - { role: post_install_setup , become: true }
 
 - name: Setup dns servers
-  hosts: dns-servers
+  hosts: dns_servers
   roles:
     - { role: dns_setup, become: true }
 

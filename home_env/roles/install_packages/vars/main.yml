@@ -59,6 +59,8 @@
     - wireshark-cli
     - tcpdump
     - hyprpolkitagent
+    - tmux
+    - dnsutils
 
   my_aur_packages:
     - wlogout
