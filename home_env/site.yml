@@ -2,11 +2,16 @@
 - name: setup arch-main
   hosts: arch-main
   roles:
-    - { role: network_setup, become: true }
-    - { role: grub_setup, become: true }
-    - { role: install_packages, become: true }
-    - { role: copy_config_files }
-    - { role: post_install_setup , become: true }
+    - { role: arch_network_setup, become: true }
+    - { role: arch_grub_setup, become: true }
+    - { role: arch_install_packages, become: true }
+    - { role: arch_copy_config_files }
+    - { role: arch_post_install_setup , become: true }
+
+- name: Setup ubuntu-servers
+  hosts: ubuntu-servers
+  roles:
+    - { role: ubuntu-common , become: true }
 
 - name: Setup dns servers
   hosts: dns_servers

@@ -1,3 +1,4 @@
+[shaan@arch-main tasks]$ cat main.yml
 ## Play to setup dns server on ubuntu server
 ## Uses pihole + bind9 within docker containers
 ---
@@ -8,11 +9,6 @@
 - name: Upgrade all packages
   apt:
     upgrade: yes
-
-- name: Check to see if docker is installed
-  stat:
-    path: /usr/bin/docker
-  register: docker_installed
 
 - name: Install dependencies
   apt:
@@ -26,7 +22,6 @@
     state: present
     update_cache: yes
 
-
 - name: Allow tcp port 53 in ufw for dns
   ufw:
     rule: allow
@@ -39,48 +34,11 @@
     port: 53
     proto: udp
 
-- name: Allow ssh port in ufw
-  ufw:
-    rule: allow
-    port: 22
-    proto: tcp
-
 - name: Enable ufw
   ufw:
     state: enabled
 
-- name: Download official docker install script
-  get_url:
-    url: https://get.docker.com
-    dest: /tmp/get-docker.sh
-    mode: '0755'
-  register: docker_script_downloaded
-  when: not docker_installed.stat.exists
-
-- name: Run docker install script
-  command: |
-    bash /tmp/get-docker.sh
-  args:
-    creates: /usr/bin/docker
-  when: not docker_installed.stat.exists
-
-- name: Cleanup docker install script if docker installed successfully
-  file:
-    path: /tmp/get-docker.sh
-    state: absent
-
-- name: Ensure docker group exists
-  group:
-    name: docker
-    state: present
-
-- name: Add user to docker group
-  user:
-    name: "{{ ansible_user }}"
-    groups: docker
-    append: yes
-
-- name: Stop and disable systemd-resolvd to free up port 53
+-- name: Stop and disable systemd-resolvd to free up port 53
   systemd:
     name: systemd-resolved
     state: stopped
@@ -118,20 +76,6 @@
     state: directory
     mode: '0755'
 
-
-- name: Ensure all changes are flushed to disk
-  shell: sync
-
-- name: Reboot to apply group and path changes
-  reboot:
-    reboot_timeout: 300
-  when: docker_script_downloaded is defined and docker_script_downloaded.changed
-
-
-- name: Wait for system to come back online
-  wait_for_connection:
-    timeout: 300
-
 - name: Start containers using docker compose
   command: |
     docker compose up -d
@@ -154,4 +98,4 @@
     content: |
       search {{ SEARCH_DOMAIN }}
       nameserver {{ DNS_1 }}
-  when: dns_working is defined and dns_working.rc == 0    
+  when: dns_working is defined and dns_working.rc == 0
