@@ -1,4 +1,3 @@
-[shaan@arch-main tasks]$ cat main.yml
 ## Play to setup dns server on ubuntu server
 ## Uses pihole + bind9 within docker containers
 ---
@@ -38,7 +37,7 @@
   ufw:
     state: enabled
 
--- name: Stop and disable systemd-resolvd to free up port 53
+- name: Stop and disable systemd-resolvd to free up port 53
   systemd:
     name: systemd-resolved
     state: stopped
