@@ -21,4 +21,9 @@
 - name: Setup qnetd voter
   hosts: dns-node1
   roles:
-    - { role: setup_qnetd, become: true }   
+    - { role: setup_qnetd, become: true }
+
+- name: Setup NTP server
+  hosts: dns-node1
+  roles:
+    - { role: setup_ntp_server, become: true }

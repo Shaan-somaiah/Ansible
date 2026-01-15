@@ -1,0 +1,53 @@
+- name: Update apt package repository
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: yes
+
+- name: Install dependencies
+  apt:
+    name:
+      - ufw
+      - chrony
+    state: present
+    update_cache: yes
+
+- name: Allow tcp port 123 in ufw for ntp
+  ufw:
+    rule: allow
+    port: 123
+    proto: tcp
+
+- name: Allow udp port 123 in ufw for ntp
+  ufw:
+    rule: allow
+    port: 123
+    proto: udp
+
+- name: Enable ufw
+  ufw:
+    state: enabled
+
+- name: Copy chrony config file
+  copy:
+    src:  chrony.conf
+    dest: /etc/chrony/chrony.conf
+    owner: "root"
+    group: "root"
+    mode:  "0644"
+
+- name: Copy static upstream server list
+  copy:
+    src: static-ntp.conf
+    dest: /etc/chrony/conf.d/static-ntp.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+
+- name: Restart chrony 
+  ansible.builtin.systemd:
+    name: chronyd
+    state: restarted
+

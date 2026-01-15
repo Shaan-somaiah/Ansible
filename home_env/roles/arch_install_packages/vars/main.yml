@@ -61,6 +61,7 @@
     - hyprpolkitagent
     - tmux
     - dnsutils
+    - chrony
 
   my_aur_packages:
     - wlogout

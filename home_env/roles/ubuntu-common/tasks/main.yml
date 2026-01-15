@@ -76,8 +76,25 @@
     reboot_timeout: 300
   when: docker_script_downloaded is defined and docker_script_downloaded.changed
 
-
 - name: Wait for system to come back online
   wait_for_connection:
     timeout: 300
+
+- name: Comment out existing chrony NTP sources
+  ansible.builtin.replace:
+    path: /etc/chrony/chrony.conf
+    regexp: '^(?!#)(pool|server|sourcedir)\s+.*'
+    replace: '# \g<0>'
+
+- name: Add custom NTP servers
+  ansible.builtin.blockinfile:
+    path: /etc/chrony/chrony.conf
+    marker: "# {mark} ANSIBLE MANAGED NTP SOURCES"
+    block: |
+      server 10.25.100.6 iburst
+
+- name: Restart chrony
+  ansible.builtin.systemd:
+    name: chrony
+    state: restarted
 

@@ -24,12 +24,12 @@
     direction: incoming
     policy: allow
 
-- name: Gen colours from pywal
-  ansible.builtin.shell: |
-    wal -i /home/{{ ansible_user }}/.config/background  &&  pywalfox install
-  args:
-    executable: /bin/bash
-  ignore_errors: true  
+#- name: Gen colours from pywal
+#  ansible.builtin.shell: |
+#    wal -i /home/{{ ansible_user }}/.config/background  &&  pywalfox install
+#  args:
+#    executable: /bin/bash
+#  ignore_errors: true  
 
 - name: Setup snapper for BTRFS snapshots
   ansible.builtin.shell: |
@@ -62,3 +62,18 @@
     name: "grub-btrfsd"
     state: started
     enabled: true
+
+- name: Copy chrony config file
+  ansible.builtin.copy:
+    src: chrony.conf
+    dest: "/etc/"
+    owner: root
+    group: root
+    mode: preserve
+  register: copy_chrony_conf
+
+- name: Restart chrony is conf file was copied
+  ansible.builtin.systemd:
+    name: chronyd
+    state: restarted
+  when: copy_chrony_conf.changed
