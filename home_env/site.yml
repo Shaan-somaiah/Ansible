@@ -9,9 +9,9 @@
     - { role: arch_post_install_setup , become: true }
 
 - name: Setup ubuntu-servers
-  hosts: ubuntu-servers
+  hosts: ubuntu_servers
   roles:
-    - { role: ubuntu-common , become: true }
+    - { role: ubuntu_common , become: true }
 
 - name: Setup dns servers
   hosts: dns_servers
@@ -27,3 +27,8 @@
   hosts: dns-node1
   roles:
     - { role: setup_ntp_server, become: true }
+
+- name: Setup K8s common
+  hosts: k8s_common
+  roles:
+    - { role: k8s_common, become: true }
