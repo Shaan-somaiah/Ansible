@@ -37,5 +37,8 @@ fi
 export EDITOR=nvim
 alias ls='ls -lrth --color=auto'
 alias vim='nvim'
+alias cmaked='cmake -DCMAKE_BUILD_TYPE=Debug ..'    # cmake debug build
+alias cmaker='cmake -DCMAKE_BUILD_TYPE=Release ..'  # cmake release build
+alias cmakeb='cmake --build .'                      # cmake build
 
 fastfetch
