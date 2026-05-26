@@ -63,6 +63,11 @@
     - dnsutils
     - chrony
     - kubectl
+    - google-glog
+    - gflags
+    - protobuf
+    - grpc
+    - ninja
 
   my_aur_packages:
     - wlogout
