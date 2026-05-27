@@ -24,6 +24,7 @@
       - ufw
       - lsof
       - chrony
+      - nmap
     state: present
     update_cache: yes
 
