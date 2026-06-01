@@ -1,0 +1,5 @@
+nginx_base_dir: /home/shaan/nginx
+
+nginx_user: shaan
+
+wildcard_domain: "*.apps.home.shaansomaiah.com"

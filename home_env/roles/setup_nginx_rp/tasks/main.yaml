@@ -1,0 +1,13 @@
+## Setup nginx as reverse proxy and generate trusted Let's Encrypt ssl certificate
+
+- name: Create nginx directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ nginx_base_dir }}"
+    - "{{ nginx_base_dir }}/certs"
+    - "{{ nginx_base_dir }}/conf.d"
+    - "{{ nginx_base_dir }}/scripts"
+
