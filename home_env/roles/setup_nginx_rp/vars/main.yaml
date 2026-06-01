@@ -1,5 +1,3 @@
-nginx_base_dir: /home/shaan/nginx
-
-nginx_user: shaan
+nginx_base_dir: "/home/{{ ansible_user }}/nginx"
 
 wildcard_domain: "*.apps.home.shaansomaiah.com"

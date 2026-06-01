@@ -4,6 +4,8 @@
   file:
     path: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
   loop:
     - "{{ nginx_base_dir }}"
@@ -11,3 +13,27 @@
     - "{{ nginx_base_dir }}/conf.d"
     - "{{ nginx_base_dir }}/scripts"
 
+- name: Deploy nginx.conf
+  copy:
+    src: nginx.conf
+    dest: "{{ nginx_base_dir }}/nginx.conf"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Deploy compose file
+  copy:
+    src: docker-compose.yaml
+    dest: "{{ nginx_base_dir }}/docker-compose.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Deploy proxy configs
+  copy:
+    src: conf.d/
+    dest: "{{ nginx_base_dir }}/conf.d/"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Start nginx container
+  community.docker.docker_compose_v2:
+    project_src: "{{ nginx_base_dir }}"
