@@ -39,3 +39,9 @@
   hosts: k8s_common
   roles:
     - { role: k8s_common, become: true }
+
+- name: Setup dev environment
+  hosts: dns-node1
+  roles:
+    - { role: setup_dev, become: true }
+
