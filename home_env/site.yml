@@ -19,19 +19,19 @@
     - { role: dns_setup, become: true }
 
 - name: Setup nginx reverse proxy
-  hosts: dns-node1
+  hosts: raspi
   vars_files:
     - vault/setup_nginx_rp.yaml
   roles:
     - { role: setup_nginx_rp, become: true }
 
 - name: Setup qnetd voter
-  hosts: dns-node1
+  hosts: raspi
   roles:
     - { role: setup_qnetd, become: true }
 
 - name: Setup NTP server
-  hosts: dns-node1
+  hosts: raspi
   roles:
     - { role: setup_ntp_server, become: true }
 
@@ -41,7 +41,6 @@
     - { role: k8s_common, become: true }
 
 - name: Setup dev environment
-  hosts: dns-node1
+  hosts: raspi
   roles:
     - { role: setup_dev, become: true }
-
