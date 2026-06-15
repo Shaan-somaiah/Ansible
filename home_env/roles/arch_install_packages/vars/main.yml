@@ -16,6 +16,7 @@
     - ripgrep
     - ufw
     - kitty
+    - rsync
     - git
     - openssh
     - cronie
