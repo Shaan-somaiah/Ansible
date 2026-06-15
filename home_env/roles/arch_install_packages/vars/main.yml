@@ -9,6 +9,7 @@
     - cmake
     - unzip
     - fd
+    - snapper
     - fastfetch
     - wayland
     - hyprland
@@ -36,7 +37,6 @@
     - gdb
     - bash-completion
     - base-devel
-    - grub-btrfs
     - inotify-tools
     - swaync
     - otf-codenewroman-nerd

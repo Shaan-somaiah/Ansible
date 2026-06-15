@@ -31,17 +31,17 @@
 #    executable: /bin/bash
 #  ignore_errors: true  
 
-# - name: Setup snapper for BTRFS snapshots
-#   ansible.builtin.shell: |
-#     snapper -c root create-config /
-#     snapper -c home create-config /home
-#     snapper -c root set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
-#     snapper -c home set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
-#     snapper -c root set-config TIMELINE_CREATE=no
-#     snapper -c home set-config TIMELINE_CREATE=no
-#   args: 
-#     executable: /bin/bash
-#   ignore_errors: true
+- name: Setup snapper for BTRFS snapshots
+  ansible.builtin.shell: |
+    snapper -c root create-config /
+    snapper -c home create-config /home
+    snapper -c root set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
+    snapper -c home set-config ALLOW_USERS="{{ ansible_user }}" SYNC_ACL=yes
+    snapper -c root set-config TIMELINE_CREATE=no
+    snapper -c home set-config TIMELINE_CREATE=no
+  args: 
+    executable: /bin/bash
+  ignore_errors: true
 
 # - name: Copy mkinitcpo file with btrfs-overlayfs added to hooks required to automatically take pre and post snapshots
 #   ansible.builtin.copy:

@@ -113,7 +113,7 @@
     - chronyd
 
 - name: Check if wlogout is already installed
-  ansible.builtin.command: command -v wlogout
+  ansible.builtin.shell: command -v wlogout
   register: wlogout_check
   failed_when: false
   changed_when: false
@@ -128,18 +128,18 @@
 - name: Configure build directory
   ansible.builtin.command:
     cmd: meson setup build
-    chdir: "{{ repo_dir }}"
+    chdir: /tmp/wlogout
   when: wlogout_check.rc != 0
 
 - name: Build project
   ansible.builtin.command:
     cmd: ninja -C build
-    chdir: "{{ repo_dir }}"
+    chdir: /tmp/wlogout
   when: wlogout_check.rc != 0
 
 - name: Install project
   become: true
   ansible.builtin.command:
     cmd: ninja -C build install
-    chdir: "{{ repo_dir }}"
+    chdir: /tmp/wlogout
   when: wlogout_check.rc != 0
