@@ -24,12 +24,12 @@
     direction: incoming
     policy: allow
 
-#- name: Gen colours from pywal
-#  ansible.builtin.shell: |
-#    wal -i /home/{{ ansible_user }}/.config/background  &&  pywalfox install
-#  args:
-#    executable: /bin/bash
-#  ignore_errors: true  
+- name: Gen colours from pywal
+  ansible.builtin.shell: |
+    wal -i /home/{{ ansible_user }}/.config/background
+  args:
+    executable: /bin/bash
+  ignore_errors: true  
 
 - name: Setup snapper for BTRFS snapshots
   ansible.builtin.shell: |

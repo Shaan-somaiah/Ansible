@@ -45,60 +45,6 @@
     state: present
   loop: "{{ my_packages }}"
 
-# - name: Check to see if yay is already installed 
-#   ansible.builtin.shell: | 
-#     which yay
-#   args: 
-#     executable: /bin/bash
-#   register: yay_installed
-#   changed_when: false
-#   ignore_errors: true
-
-# - name: Clone yay repo if above is false
-#   ansible.builtin.git:
-#     repo: 'https://aur.archlinux.org/yay.git'
-#     dest: '/home/{{ ansible_user }}/yay'
-#     clone: yes
-#     update: true
-#   become_user: "{{ ansible_user }}"
-#   when: yay_installed.rc != 0 
-
-# - name: Build and install yay
-#   command:
-#     chdir: "/home/{{ ansible_user }}/yay"
-#     cmd: "makepkg -sfi --noconfirm"
-#     creates: /usr/bin/yay
-#   become_user: "{{ ansible_user }}"
-#   when: yay_installed.rc != 0
-
-# - name: Cleanup yay directory
-#   ansible.builtin.file:
-#     path: /home/{{ ansible_user }}/yay
-#     state: absent
-
-# ## Arch recommends running AUR commands as non root user
-
-# - name: Create db for development packages
-#   ansible.builtin.shell: |
-#     yay -Y --gendb -y && yay -Y --devel --save
-#   changed_when: false
-#   become_user: "{{ ansible_user }}"
-#   ignore_errors: true
-#   when: yay_installed.rc != 0
-
-# - name: Upgrade and install yay packages
-#   ansible.builtin.shell: |
-#     yay -Syu wlogout hyprpolkitagent btrfs-assistant python-pywalfox --noconfirm
-#   changed_when: false
-#   become_user: "{{ ansible_user }}"
-#   ignore_errors: true
-  
-#- name: Install yay packages
-#  ansible.builtin.shell: |
-#    yay -S {{ item }} --noconfirm
-#  loop: "{{ my_aur_packages }}"
-#  become_user: "{{ ansible_user }}"
-#  ignore_errors: true
 
 - name: Enabled installed services
   ansible.builtin.service:
@@ -109,8 +55,49 @@
     - libvirtd
     - cronie
     - ufw
-    - docker
     - chronyd
+
+- name: Check if VS Code is already installed
+  ansible.builtin.stat:
+    path: "/opt/vscode/code"
+  register: vscode_installed
+
+- name: Download VS Code archive
+  ansible.builtin.get_url:
+    url: "https://code.visualstudio.com/sha/download?build=stable&os=linux-x64"
+    dest: "/tmp/vscode-linux-x64.tar.gz"
+    mode: "0644"
+  when: not vscode_installed.stat.exists
+
+- name: Create installation directory
+  ansible.builtin.file:
+    path: "/opt/vscode"
+    state: directory
+    mode: "0755"
+  when: not vscode_installed.stat.exists
+
+- name: Extract VS Code archive
+  ansible.builtin.unarchive:
+    src: "/tmp/vscode-linux-x64.tar.gz"
+    dest: "/opt/vscode"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+  when: not vscode_installed.stat.exists
+
+- name: Create code symlink
+  ansible.builtin.file:
+    src: "/opt/vscode/code"
+    dest: "/usr/local/bin/code"
+    state: link
+  when: not vscode_installed.stat.exists
+
+- name: Remove downloaded archive
+  ansible.builtin.file:
+    path: "/tmp/vscode-linux-x64.tar.gz"
+    state: absent
+  when: not vscode_installed.stat.exists
+
 
 - name: Check if wlogout is already installed
   ansible.builtin.shell: command -v wlogout
