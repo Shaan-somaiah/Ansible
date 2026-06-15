@@ -28,7 +28,6 @@
     - libvirt
     - rofi
     - papirus-icon-theme
-    - virt-manager
     - btop
     - nfs-utils
     - man
@@ -38,9 +37,6 @@
     - bash-completion
     - base-devel
     - grub-btrfs
-    - snapper
-    - snap-pac
-    - btrfs-progs
     - inotify-tools
     - swaync
     - otf-codenewroman-nerd
@@ -49,8 +45,6 @@
     - python-pywal
     - blueman
     - gvfs
-    - codeblocks
-    - docker
     - nmap
     - wl-clipboard
     - dnsutils
@@ -68,9 +62,5 @@
     - protobuf
     - grpc
     - ninja
-
-  my_aur_packages:
-    - wlogout
-    - btrfs-assistant
-    - hyprpolkitagent
-    - python-pywalfox
+    - meson
+    - code

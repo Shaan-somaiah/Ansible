@@ -45,53 +45,53 @@
     state: present
   loop: "{{ my_packages }}"
 
-- name: Check to see if yay is already installed 
-  ansible.builtin.shell: | 
-    which yay
-  args: 
-    executable: /bin/bash
-  register: yay_installed
-  changed_when: false
-  ignore_errors: true
+# - name: Check to see if yay is already installed 
+#   ansible.builtin.shell: | 
+#     which yay
+#   args: 
+#     executable: /bin/bash
+#   register: yay_installed
+#   changed_when: false
+#   ignore_errors: true
 
-- name: Clone yay repo if above is false
-  ansible.builtin.git:
-    repo: 'https://aur.archlinux.org/yay.git'
-    dest: '/home/{{ ansible_user }}/yay'
-    clone: yes
-    update: true
-  become_user: "{{ ansible_user }}"
-  when: yay_installed.rc != 0 
+# - name: Clone yay repo if above is false
+#   ansible.builtin.git:
+#     repo: 'https://aur.archlinux.org/yay.git'
+#     dest: '/home/{{ ansible_user }}/yay'
+#     clone: yes
+#     update: true
+#   become_user: "{{ ansible_user }}"
+#   when: yay_installed.rc != 0 
 
-- name: Build and install yay
-  command:
-    chdir: "/home/{{ ansible_user }}/yay"
-    cmd: "makepkg -sfi --noconfirm"
-    creates: /usr/bin/yay
-  become_user: "{{ ansible_user }}"
-  when: yay_installed.rc != 0
+# - name: Build and install yay
+#   command:
+#     chdir: "/home/{{ ansible_user }}/yay"
+#     cmd: "makepkg -sfi --noconfirm"
+#     creates: /usr/bin/yay
+#   become_user: "{{ ansible_user }}"
+#   when: yay_installed.rc != 0
 
-- name: Cleanup yay directory
-  ansible.builtin.file:
-    path: /home/{{ ansible_user }}/yay
-    state: absent
+# - name: Cleanup yay directory
+#   ansible.builtin.file:
+#     path: /home/{{ ansible_user }}/yay
+#     state: absent
 
-## Arch recommends running AUR commands as non root user
+# ## Arch recommends running AUR commands as non root user
 
-- name: Create db for development packages
-  ansible.builtin.shell: |
-    yay -Y --gendb -y && yay -Y --devel --save
-  changed_when: false
-  become_user: "{{ ansible_user }}"
-  ignore_errors: true
-  when: yay_installed.rc != 0
+# - name: Create db for development packages
+#   ansible.builtin.shell: |
+#     yay -Y --gendb -y && yay -Y --devel --save
+#   changed_when: false
+#   become_user: "{{ ansible_user }}"
+#   ignore_errors: true
+#   when: yay_installed.rc != 0
 
-- name: Upgrade and install yay packages
-  ansible.builtin.shell: |
-    yay -Syu wlogout hyprpolkitagent btrfs-assistant python-pywalfox --noconfirm
-  changed_when: false
-  become_user: "{{ ansible_user }}"
-  ignore_errors: true
+# - name: Upgrade and install yay packages
+#   ansible.builtin.shell: |
+#     yay -Syu wlogout hyprpolkitagent btrfs-assistant python-pywalfox --noconfirm
+#   changed_when: false
+#   become_user: "{{ ansible_user }}"
+#   ignore_errors: true
   
 #- name: Install yay packages
 #  ansible.builtin.shell: |
@@ -108,6 +108,38 @@
     - bluetooth
     - libvirtd
     - cronie
-#    - ufw
+    - ufw
     - docker
     - chronyd
+
+- name: Check if wlogout is already installed
+  ansible.builtin.command: command -v wlogout
+  register: wlogout_check
+  failed_when: false
+  changed_when: false
+
+- name: Clone repository
+  ansible.builtin.git:
+    repo: https://github.com/ArtsyMacaw/wlogout.git
+    dest: /tmp/wlogout
+    update: yes
+  when: wlogout_check.rc != 0
+
+- name: Configure build directory
+  ansible.builtin.command:
+    cmd: meson setup build
+    chdir: "{{ repo_dir }}"
+  when: wlogout_check.rc != 0
+
+- name: Build project
+  ansible.builtin.command:
+    cmd: ninja -C build
+    chdir: "{{ repo_dir }}"
+  when: wlogout_check.rc != 0
+
+- name: Install project
+  become: true
+  ansible.builtin.command:
+    cmd: ninja -C build install
+    chdir: "{{ repo_dir }}"
+  when: wlogout_check.rc != 0

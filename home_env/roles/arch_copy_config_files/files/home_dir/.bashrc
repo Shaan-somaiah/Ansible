@@ -27,7 +27,7 @@ unset rc
 ## Automatically startup hyprland if the tty is 1
 ## To get into regular tty , either login as root or change tty to 2-6 (ctrl + alt + F2-F6, 7 reserved for display server)
 if [ "$(tty)" == "/dev/tty1" ]; then
-    exec Hyprland
+    start-hyprland
 fi
 
 ## alias ssh to include kitty plugin when terminal is kitty

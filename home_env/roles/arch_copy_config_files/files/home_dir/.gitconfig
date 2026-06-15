@@ -1,6 +1,10 @@
 [user]
-	name = Shaan-somaiah
 	email = shaansomaiah@gmail.com
+	name = Shaan-somaiah
+[init]
+	defaultBranch = main
+[push]
+	autoSetupRemote = true
 [core]
 	editor = nvim
 	autocrlf = input
