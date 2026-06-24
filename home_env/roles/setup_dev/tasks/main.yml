@@ -52,7 +52,7 @@
   apt:
     update_cache: yes
 
-- name: Install kubeadm, kubelet and kubectl
+- name: Install kubectl
   apt:
     name:
       - kubectl

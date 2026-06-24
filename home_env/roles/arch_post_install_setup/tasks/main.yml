@@ -22,7 +22,7 @@
   community.general.ufw:
     state: enabled
     direction: incoming
-    policy: allow
+    policy: deny
 
 - name: Gen colours from pywal
   ansible.builtin.shell: |
