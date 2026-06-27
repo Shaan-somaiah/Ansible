@@ -93,7 +93,7 @@
     path: /etc/chrony/chrony.conf
     marker: "# {mark} ANSIBLE MANAGED NTP SOURCES"
     block: |
-      server 10.25.100.6 iburst
+      server raspi iburst
 
 - name: Restart chrony
   ansible.builtin.systemd:
