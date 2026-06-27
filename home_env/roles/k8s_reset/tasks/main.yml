@@ -1,0 +1,86 @@
+---
+- name: Stop kubelet
+  systemd:
+    name: kubelet
+    state: stopped
+
+- name: Check if Kubernetes is initialized
+  stat:
+    path: /etc/kubernetes
+  register: k8s_installed
+
+- name: Reset Kubernetes cluster
+  command: kubeadm reset -f
+  when: k8s_installed.stat.exists
+
+- name: Stop containerd
+  systemd:
+    name: containerd
+    state: stopped
+
+- name: Remove Kubernetes directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/kubernetes
+    - /var/lib/kubelet
+    - /var/lib/cni
+    - /etc/cni/net.d
+    - /var/lib/kube-proxy
+
+- name: Remove user kubeconfig
+  file:
+    path: "/home/{{ ansible_user }}/.kube"
+    state: absent
+
+- name: Remove etcd data (control plane only)
+  file:
+    path: /var/lib/etcd
+    state: absent
+  when: inventory_hostname in groups['k8s_master']
+
+- name: Delete flannel interface
+  command: ip link delete flannel.1
+  failed_when: false
+  changed_when: false
+
+- name: Delete cni0 bridge
+  command: ip link delete cni0
+  failed_when: false
+  changed_when: false
+
+- name: Flush iptables raw table
+  command: iptables -t raw -F
+  failed_when: false
+  changed_when: false
+
+- name: Flush iptables filter table
+  command: iptables -F
+  failed_when: false
+  changed_when: false
+
+- name: Flush iptables NAT table
+  command: iptables -t nat -F
+  failed_when: false
+  changed_when: false
+
+- name: Flush iptables mangle table
+  command: iptables -t mangle -F
+  failed_when: false
+  changed_when: false
+
+- name: Delete custom iptables chains
+  command: iptables -X
+  failed_when: false
+  changed_when: false
+
+- name: Start containerd
+  systemd:
+    name: containerd
+    state: started
+
+- name: Disable kubelet after reset
+  systemd:
+    name: kubelet
+    state: stopped

@@ -36,9 +36,20 @@
     - { role: setup_ntp_server, become: true }
 
 - name: Setup K8s common
-  hosts: k8s_common
+  hosts: k8s_cluster
   roles:
     - { role: k8s_common, become: true }
+
+- name: Initialize K8s control plane
+  hosts: k8s_master
+  roles:
+    - { role: k8s_control_plane, become: true }
+
+- name: Join K8s workers
+  hosts: k8s_workers
+  serial: 1
+  roles:
+    - { role: k8s_worker, become: true }
 
 - name: Setup dev environment
   hosts: raspi

@@ -13,6 +13,9 @@
       - containerd
       - curl
       - gpg
+      - nfs-common
+      - conntrack
+      - socat
     state: present
     update_cache: yes
 
@@ -43,10 +46,10 @@
     regexp: 'SystemdCgroup = false'
     replace: 'SystemdCgroup = true'
 
-- name: Restart and enable containerd
+- name: Enable containerd
   systemd:
     name: containerd
-    state: restarted
+    state: started
     enabled: yes
 
 - name: Load kernel modules
@@ -83,7 +86,7 @@
 
 - name: Fetch and place k8s keyring
   get_url:
-    url: https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key
+    url: "https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/Release.key"
     dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
     mode: "0644"
 
@@ -98,7 +101,7 @@
   copy:
     dest: /etc/apt/sources.list.d/kubernetes.list
     content: |
-      deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
+      deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/ /
 
 - name: Update apt package repository
   apt:
@@ -126,8 +129,19 @@
     regexp: '^\s*([^#].*\s+swap\s+.*)$'
     replace: '# \1'
 
+- name: Configure kubelet node IP
+  copy:
+    dest: /etc/default/kubelet
+    content: |
+      KUBELET_EXTRA_ARGS=--node-ip={{ ansible_facts.default_ipv4.address }}
+    mode: "0644"
+
+- name: Restart kubelet
+  systemd:
+    name: kubelet
+    state: restarted
+
 - name: Enable kubelet
   systemd:
     name: kubelet
     enabled: yes
-
