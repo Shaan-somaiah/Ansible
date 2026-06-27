@@ -68,3 +68,13 @@
     - noto-fonts-cjk
     - ttf-dejavu
     - noto-fonts-emoji
+    - nvidia-open-lts
+    - nvidia-utils
+    - lib32-nvidia-utils
+    - steam
+    - vulkan-tools
+    - mesa-utils
+    - gamemode
+    - mangohud
+    - gamescope
+    - protontricks

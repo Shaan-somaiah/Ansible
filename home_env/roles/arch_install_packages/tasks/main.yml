@@ -33,6 +33,15 @@
     mode: '0600'
   when: not reflector_ran.stat.exists
 
+- name: Enable multilib repository
+  ansible.builtin.replace:
+    path: /etc/pacman.conf
+    regexp: |
+      #\[multilib\]\n#Include = /etc/pacman\.d/mirrorlist
+    replace: |
+      [multilib]
+      Include = /etc/pacman.d/mirrorlist
+
 - name: Update package list
   community.general.pacman:
     update_cache: true
@@ -105,7 +114,7 @@
   failed_when: false
   changed_when: false
 
-- name: Clone repository
+- name: Clone wlogout repository
   ansible.builtin.git:
     repo: https://github.com/ArtsyMacaw/wlogout.git
     dest: /tmp/wlogout
@@ -118,13 +127,13 @@
     chdir: /tmp/wlogout
   when: wlogout_check.rc != 0
 
-- name: Build project
+- name: Build wlogout
   ansible.builtin.command:
     cmd: ninja -C build
     chdir: /tmp/wlogout
   when: wlogout_check.rc != 0
 
-- name: Install project
+- name: Install wlogout
   become: true
   ansible.builtin.command:
     cmd: ninja -C build install
