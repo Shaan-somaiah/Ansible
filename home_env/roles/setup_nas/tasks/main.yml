@@ -2,10 +2,58 @@
 - name: Install required packages
   ansible.builtin.apt:
     name:
+      - zfsutils-linux
+      - nfs-kernel-server
       - gpg
       - rclone
+      - smartmontools
+      - nvme-cli
+      - jq
+      - curl
+      - git
     state: present
     update_cache: true
+
+- name: Verify ZFS pool exists
+  ansible.builtin.command:
+    cmd: zpool list {{ zfs_pool }}
+  changed_when: false
+
+- name: Configure ZFS cachefile
+  ansible.builtin.command:
+    cmd: zpool set cachefile=/etc/zfs/zpool.cache {{ zfs_pool }}
+  changed_when: false
+
+- name: Enabled installed services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - nfs-server
+    - zfs-import-cache.service
+    - zfs-mount.service
+    - zfs-zed.service
+
+- name: Enable lz4 compression
+  ansible.builtin.command:
+    cmd: zfs set compression=lz4 {{ zfs_pool }}
+  changed_when: false
+
+- name: Disable atime
+  ansible.builtin.command:
+    cmd: zfs set atime=off {{ zfs_pool }}
+  changed_when: false
+
+- name: Store xattrs efficiently
+  ansible.builtin.command:
+    cmd: zfs set xattr=sa {{ zfs_pool }}
+  changed_when: false
+
+- name: Enable autoexpand
+  ansible.builtin.command:
+    cmd: zpool set autoexpand=on {{ zfs_pool }}
+  changed_when: false
 
 - name: Create apt keyrings directory
   ansible.builtin.file:
@@ -19,15 +67,16 @@
   ansible.builtin.get_url:
     url: https://kopia.io/signing-key
     dest: /tmp/kopia-signing-key
+    mode: "0644"
+  register: kopia_key
 
 - name: Install Kopia GPG key
-  ansible.builtin.command:
-    cmd: >
-      gpg --dearmor
-      --output /etc/apt/keyrings/kopia-keyring.gpg
-      /tmp/kopia-signing-key
-  args:
-    creates: /etc/apt/keyrings/kopia-keyring.gpg
+  ansible.builtin.command: >
+    gpg --dearmor
+    --yes
+    --output /etc/apt/keyrings/kopia-keyring.gpg
+    /tmp/kopia-signing-key
+  when: kopia_key.changed
 
 - name: Configure Kopia repository
   ansible.builtin.apt_repository:
@@ -41,48 +90,54 @@
     name: kopia
     state: present
 
+- name: Remove temporary Kopia GPG key
+  ansible.builtin.file:
+    path: /tmp/kopia-signing-key
+    state: absent
+
 - name: Create rclone config directory
   ansible.builtin.file:
     path: /home/{{ ansible_user }}/.config/rclone
     state: directory
-    owner: shaan
-    group: shaan
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0755"
 
 - name: Create Kopia config directory
   ansible.builtin.file:
     path: /home/{{ ansible_user }}/.config/kopia
     state: directory
-    owner: shaan
-    group: shaan
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0700"
 
 - name: Install rclone configuration
   ansible.builtin.copy:
     src: rclone.conf
     dest: /home/{{ ansible_user }}/.config/rclone/rclone.conf
-    owner: shaan
-    group: shaan
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
 
 - name: Install Kopia repository configuration
   ansible.builtin.copy:
     src: repository.config
     dest: /home/{{ ansible_user }}/.config/kopia/repository.config
-    owner: shaan
-    group: shaan
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
 
 - name: Install Kopia repository password
   ansible.builtin.copy:
     src: repository.config.kopia-password
     dest: /home/{{ ansible_user }}/.config/kopia/repository.config.kopia-password
-    owner: shaan
-    group: shaan
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
     mode: "0600"
 
 - name: List Kopia snapshots
-  become: false
+  become: true
+  become_user: "{{ ansible_user }}"
   ansible.builtin.command:
     cmd: kopia snapshot list
   register: kopia_snapshots
