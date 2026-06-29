@@ -4,10 +4,6 @@
   apt:
     update_cache: yes
 
-- name: Upgrade all packages
-  apt:
-    upgrade: yes
-
 - name: Install required packages
   apt:
     name:

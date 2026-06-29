@@ -5,10 +5,6 @@
   apt:
     update_cache: yes
 
-- name: Upgrade all packages
-  apt:
-    upgrade: yes
-
 - name: Check to see if docker is installed
   stat:
     path: /usr/bin/docker
