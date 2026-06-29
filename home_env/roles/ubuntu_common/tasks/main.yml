@@ -20,6 +20,7 @@
       - chrony
       - nmap
       - figlet
+      - nfs-common
     state: present
     update_cache: yes
 

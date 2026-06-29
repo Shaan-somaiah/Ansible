@@ -35,6 +35,11 @@
   roles:
     - { role: setup_ntp_server, become: true }
 
+- name: Setup nas 
+  hosts: nas
+  roles:
+    - { role: setup_nas, become: true }
+
 - name: Setup K8s common
   hosts: k8s_cluster
   roles:
@@ -55,8 +60,3 @@
   hosts: raspi
   roles:
     - { role: setup_dev, become: true }
-
-- name: Setup kopia backup
-  hosts: kopia
-  roles:
-    - { role: setup_kopia, become: true }
