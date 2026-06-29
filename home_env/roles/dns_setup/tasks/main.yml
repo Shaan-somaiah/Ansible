@@ -9,6 +9,11 @@
   apt:
     upgrade: yes
 
+- name: Check to see if docker is installed
+  stat:
+    path: /usr/bin/docker
+  register: docker_installed
+
 - name: Install dependencies
   apt:
     name:
@@ -18,8 +23,54 @@
       - iputils-ping
       - ufw
       - lsof
+      - chrony
+      - nmap
+      - figlet
     state: present
     update_cache: yes
+
+- name: Download official docker install script
+  get_url:
+    url: https://get.docker.com
+    dest: /tmp/get-docker.sh
+    mode: '0755'
+  register: docker_script_downloaded
+  when: not docker_installed.stat.exists
+
+- name: Run docker install script
+  command: |
+    bash /tmp/get-docker.sh
+  args:
+    creates: /usr/bin/docker
+  when: not docker_installed.stat.exists
+
+- name: Cleanup docker install script if docker installed successfully
+  file:
+    path: /tmp/get-docker.sh
+    state: absent
+
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+
+- name: Ensure all changes are flushed to disk
+  shell: sync
+
+- name: Reboot to apply group and path changes
+  reboot:
+    reboot_timeout: 300
+  when: docker_script_downloaded is defined and docker_script_downloaded.changed
+
+- name: Wait for system to come back online
+  wait_for_connection:
+    timeout: 300
 
 - name: Allow tcp port 53 in ufw for dns
   ufw:
@@ -50,7 +101,6 @@
       search {{ SEARCH_DOMAIN }}
       nameserver {{ DNS_1 }}
       nameserver {{ DNS_2 }}
-
 
 - name: Copy docker compose and config files to /home/{{ ansible_user }}
   copy:
