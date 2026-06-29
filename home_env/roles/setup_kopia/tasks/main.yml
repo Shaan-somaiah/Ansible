@@ -1,0 +1,93 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - gpg
+      - rclone
+    state: present
+    update_cache: true
+
+- name: Create apt keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download Kopia GPG key
+  ansible.builtin.get_url:
+    url: https://kopia.io/signing-key
+    dest: /tmp/kopia-signing-key
+
+- name: Install Kopia GPG key
+  ansible.builtin.command:
+    cmd: >
+      gpg --dearmor
+      --output /etc/apt/keyrings/kopia-keyring.gpg
+      /tmp/kopia-signing-key
+  args:
+    creates: /etc/apt/keyrings/kopia-keyring.gpg
+
+- name: Configure Kopia repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kopia-keyring.gpg] http://packages.kopia.io/apt/ stable main"
+    filename: kopia
+    state: present
+    update_cache: true
+
+- name: Install Kopia
+  ansible.builtin.apt:
+    name: kopia
+    state: present
+
+- name: Create rclone config directory
+  ansible.builtin.file:
+    path: /home/{{ ansible_user }}/.config/rclone
+    state: directory
+    owner: shaan
+    group: shaan
+    mode: "0755"
+
+- name: Create Kopia config directory
+  ansible.builtin.file:
+    path: /home/{{ ansible_user }}/.config/kopia
+    state: directory
+    owner: shaan
+    group: shaan
+    mode: "0700"
+
+- name: Install rclone configuration
+  ansible.builtin.copy:
+    src: rclone.conf
+    dest: /home/{{ ansible_user }}/.config/rclone/rclone.conf
+    owner: shaan
+    group: shaan
+    mode: "0600"
+
+- name: Install Kopia repository configuration
+  ansible.builtin.copy:
+    src: repository.config
+    dest: /home/{{ ansible_user }}/.config/kopia/repository.config
+    owner: shaan
+    group: shaan
+    mode: "0600"
+
+- name: Install Kopia repository password
+  ansible.builtin.copy:
+    src: repository.config.kopia-password
+    dest: /home/{{ ansible_user }}/.config/kopia/repository.config.kopia-password
+    owner: shaan
+    group: shaan
+    mode: "0600"
+
+- name: List Kopia snapshots
+  become: false
+  ansible.builtin.command:
+    cmd: kopia snapshot list
+  register: kopia_snapshots
+  changed_when: false
+
+- name: Display snapshot status
+  ansible.builtin.debug:
+    var: kopia_snapshots.stdout_lines

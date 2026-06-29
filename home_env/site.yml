@@ -55,3 +55,8 @@
   hosts: raspi
   roles:
     - { role: setup_dev, become: true }
+
+- name: Setup kopia backup
+  hosts: kopia
+  roles:
+    - { role: setup_kopia, become: true }
