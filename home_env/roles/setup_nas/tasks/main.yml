@@ -95,49 +95,55 @@
     path: /tmp/kopia-signing-key
     state: absent
 
+- name: Create root config directory
+  ansible.builtin.file:
+    path: /root/.config/
+    state: directory
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
 - name: Create rclone config directory
   ansible.builtin.file:
-    path: /home/{{ ansible_user }}/.config/rclone
+    path: /root/.config/rclone
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "root"
+    group: "root"
     mode: "0755"
 
 - name: Create Kopia config directory
   ansible.builtin.file:
-    path: /home/{{ ansible_user }}/.config/kopia
+    path: /root/.config/kopia
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "root"
+    group: "root"
     mode: "0700"
 
 - name: Install rclone configuration
   ansible.builtin.copy:
     src: rclone.conf
-    dest: /home/{{ ansible_user }}/.config/rclone/rclone.conf
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    dest: /root/.config/rclone/rclone.conf
+    owner: "root"
+    group: "root"
     mode: "0600"
 
 - name: Install Kopia repository configuration
   ansible.builtin.copy:
     src: repository.config
-    dest: /home/{{ ansible_user }}/.config/kopia/repository.config
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    dest: /root/.config/kopia/repository.config
+    owner: "root"
+    group: "root"
     mode: "0600"
 
 - name: Install Kopia repository password
   ansible.builtin.copy:
     src: repository.config.kopia-password
-    dest: /home/{{ ansible_user }}/.config/kopia/repository.config.kopia-password
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    dest: /root/.config/kopia/repository.config.kopia-password
+    owner: "root"
+    group: "root"
     mode: "0600"
 
 - name: List Kopia snapshots
-  become: true
-  become_user: "{{ ansible_user }}"
   ansible.builtin.command:
     cmd: kopia snapshot list
   register: kopia_snapshots
